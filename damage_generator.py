@@ -72,8 +72,8 @@ def make_multiplier_and_damage_gens(exp, l_stats, h_stats):
     """
     dam_field = 'BaseDamageExp' + str(exp)
 
-    def generate_damage(variance, multiplier, attacktime, melee):
-        ap_field = 'Base' + ('Melee' if melee else 'Ranged') + 'AttackPower'
+    def generate_damage(variance, multiplier, attacktime):
+        ap_field = 'BaseMeleeAttackPower'
         l_ap = l_stats[ap_field]
         h_ap = h_stats[ap_field]
         l_b_damage = l_stats[dam_field]
@@ -84,7 +84,7 @@ def make_multiplier_and_damage_gens(exp, l_stats, h_stats):
 
         return l_damage, h_damage
 
-    def generate_multipliers(l_damage, h_damage, attacktime, melee):
+    def generate_multipliers(l_damage, h_damage, attacktime):
         """
         Generate the proper multiplier and variance for a creature with
         minimum damage l_damage and maximum damage h_damage,
@@ -118,7 +118,7 @@ def make_multiplier_and_damage_gens(exp, l_stats, h_stats):
         Calculate variance using (5).
         Substitute this value into (2) to calculate the multiplier.
         """
-        ap_field = 'Base' + ('Melee' if melee else 'Ranged') + 'AttackPower'
+        ap_field = 'BaseMeleeAttackPower'
         l_ap = l_stats[ap_field]
         h_ap = h_stats[ap_field]
         l_b_damage = l_stats[dam_field]
@@ -132,8 +132,6 @@ def make_multiplier_and_damage_gens(exp, l_stats, h_stats):
         variance = -(0.1428571429*(h_ap*l_damage - l_ap*h_damage))\
                    /(3*h_b_damage*l_damage - 2*l_b_damage*h_damage)
 
-        if variance == 0.0: return 0.0, 0.0
-
         multiplier = 14000 * h_damage / ((21 * h_b_damage * variance + h_ap) * attacktime)
 
         return multiplier, variance
@@ -141,18 +139,18 @@ def make_multiplier_and_damage_gens(exp, l_stats, h_stats):
 
 def generate_stats(
     out, stats, entry, name, l_level, h_level, unit_class, expansion,
-    d_multiplier, d_variance, l_melee_damage, h_melee_damage, attacktime):
+    d_multiplier, d_variance, l_damage, h_damage, attacktime):
 
     # Skip creatures with expansion == -1 or unit class == 0.
     if expansion == -1 or unit_class == 0: return 'unchecked'
 
     try:
         # Check that min and max damage are set and not equal.
-        assert l_melee_damage != 0 and h_melee_damage != 0,\
-            'Min damage ({}) or max damage ({}) is zero!'.format(l_melee_damage, h_melee_damage)
+        assert l_damage != 0 and h_damage != 0,\
+            'Min damage ({}) or max damage ({}) is zero!'.format(l_damage, h_damage)
 
-        assert l_melee_damage != h_melee_damage,\
-            'Min melee damage ({}) is the same as max damage!'.format(l_melee_damage)
+        assert l_damage != h_damage,\
+            'Min melee damage ({}) is the same as max damage!'.format(l_damage)
 
         # Make sure that the level and expansion values make sense.
         assert l_level >= 1,\
@@ -192,13 +190,13 @@ def generate_stats(
 
     # First check the melee stats.
     # Generate a new multiplier and variance based on DB damage.
-    multiplier, variance = gen_multipliers(l_melee_damage, h_melee_damage, attacktime, melee=True)
+    multiplier, variance = gen_multipliers(l_damage, h_damage, attacktime)
     # Now calculate min and max damage using the old multiplier and variance.
-    l_damage, h_damage = gen_damage(d_variance, d_multiplier, attacktime, melee=True)
+    l_g_damage, h_g_damage = gen_damage(d_variance, d_multiplier, attacktime)
 
     # If these two values don't match, DB multiplier and variance needs changing.
-    if not within_range(l_damage, l_melee_damage): needs_update = True
-    if not within_range(h_damage, h_melee_damage): needs_update = True
+    if not within_range(l_g_damage, l_damage): needs_update = True
+    if not within_range(h_g_damage, h_damage): needs_update = True
 
     if needs_update:
         out.write("-- {} ({})\n".format(name, entry))
