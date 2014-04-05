@@ -5,6 +5,7 @@ Written by Patman64.
 """
 
 import MySQLdb as mysql
+from math import ceil, log10
 
 DB_INFO = {
         'db': 'tbcdb',
@@ -199,9 +200,12 @@ def generate_stats(
     if not within_range(h_g_damage, h_damage): needs_update = True
 
     if needs_update:
+        # Need more multiplier accuracy for higher damage values.
+        accuracy = int(ceil(log10(h_damage)))
+
         out.write("-- {} ({})\n".format(name, entry))
         out.write("UPDATE creature_template SET\n")
-        out.write("DamageMultiplier = {:.2f}, DamageVariance = {:.2f}\n".format(multiplier, variance))
+        out.write("DamageMultiplier = {{:.{0}f}}, DamageVariance = {{:.{0}f}}\n".format(accuracy).format(multiplier, variance))
         out.write("WHERE entry = {};\n\n".format(entry))
         return 'updated'
 
