@@ -22,6 +22,7 @@ defect_count = 0
 RANKS = ['Normal', 'Elite', 'Rare Elite', 'World Boss', 'Rare']
 UNIT_CLASSES = ['???', 'Warrior', 'Paladin', '', 'Rogue', '', '', '', 'Mage']
 MAX_LEVEL = 75
+EXPANSIONS = range(2) # Change to 3 for WotLK, 4 for Cata, etc.
 
 TESTS = [
     ('Check that all warriors have no mana.',
@@ -110,7 +111,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
     assert l_level >= 1, 'Min level {} is less than 1!'.format(l_level)
     assert h_level <= MAX_LEVEL, 'Max level {} is greater than {}!'.format(h_level, MAX_LEVEL)
     assert rank >= 0 and rank < len(RANKS), 'Rank {} is invalid!'.format(rank)
-    assert expansion == 0 or expansion == 1, 'Expansion is {} instead of 0/1!'.format(expansion)
+    assert expansion in EXPANSIONS, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
 
     def within_range(a, b):
         return abs(a - b) <= ACCURACY
@@ -146,39 +147,32 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
                 if not within_range(int(float(h_mana) / h_stats['BaseMana']), int(mana_mult_calc)):
                     inconsistent_mana = True
 
-    def make_suggestions(expansion, multiplier_calc, health=False, mana=False):
+    def make_suggestions(expansion_db, multiplier_calc, health=False, mana=False):
         suggestions = []
         classes = [1, 2, 8]
-        for _class in classes:
-            l_stats, h_stats = stats[_class][l_level], stats[_class][h_level]
-            if health:
-                _l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
-                _h_health_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
 
-                if within_range(l_health, _l_health_calc) and within_range(h_health, _h_health_calc):
-                    suggestions.append('change class to ' + str(_class))
-            elif mana:
-                _l_mana_calc = l_stats['BaseMana'] * mana_mult
-                _h_mana_calc = h_stats['BaseMana'] * mana_mult
+        for expansion in EXPANSIONS:
+            for _class in classes:
+                l_stats, h_stats = stats[_class][l_level], stats[_class][h_level]
 
-                if within_range(l_mana, _l_mana_calc) and within_range(h_mana, _h_mana_calc):
-                    suggestions.append('change class to ' + str(_class))
+                if health:
+                    _l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
+                    _h_health_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
 
-        expansion = 1 if expansion == 0 else 0
-        for _class in classes:
-            l_stats, h_stats = stats[_class][l_level], stats[_class][h_level]
-            if health:
-                _l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
-                _h_health_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
+                    if within_range(l_health, _l_health_calc) and within_range(h_health, _h_health_calc):
+                        if expansion == expansion_db:
+                            suggestions.append('change class to ' + str(_class))
+                        else:
+                            suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
+                elif mana:
+                    _l_mana_calc = l_stats['BaseMana'] * mana_mult
+                    _h_mana_calc = h_stats['BaseMana'] * mana_mult
 
-                if within_range(l_health, _l_health_calc) and within_range(h_health, _h_health_calc):
-                    suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
-            elif mana:
-                _l_mana_calc = l_stats['BaseMana'] * mana_mult
-                _h_mana_calc = h_stats['BaseMana'] * mana_mult
-
-                if within_range(l_mana, _l_mana_calc) and within_range(h_mana, _h_mana_calc):
-                    suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
+                    if within_range(l_mana, _l_mana_calc) and within_range(h_mana, _h_mana_calc):
+                        if expansion == expansion_db:
+                            suggestions.append('change class to ' + str(_class))
+                        else:
+                            suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
 
         if multiplier_calc > 0:
             suggestions.append('change multiplier to {:.4f}'.format(multiplier_calc))
