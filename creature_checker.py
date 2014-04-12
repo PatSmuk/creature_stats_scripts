@@ -228,12 +228,13 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
             write_field('mana mult', mana_mult)
             out.write('\n')
 
-            out.write('CALCULATED VALUES\n')
-            write_field('min health', l_health_calc)
-            write_field('max health', h_health_calc)
-            write_field('min mana', l_mana_calc)
-            write_field('max mana', h_mana_calc)
-            out.write('\n')
+            if unit_class != 0 and expansion != -1:
+                out.write('CALCULATED VALUES\n')
+                write_field('min health', l_health_calc)
+                write_field('max health', h_health_calc)
+                write_field('min mana', l_mana_calc)
+                write_field('max mana', h_mana_calc)
+                out.write('\n')
 
             if bad_health:
                 out.write('ERROR: Health values does not match.\n')
