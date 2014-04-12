@@ -138,12 +138,13 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
     def within_range(a, b):
         return abs(a - b) <= ACCURACY
 
+    bad_health, bad_mana = False, False
+
     if unit_class != 0 and expansion != -1:
         l_stats, h_stats = stats[unit_class][l_level], stats[unit_class][h_level]
 
         l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
         h_health_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
-        bad_health = False
         inconsistent_health = False
 
         if not within_range(l_health, l_health_calc) or not within_range(h_health, h_health_calc):
@@ -155,7 +156,6 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
             
         l_mana_calc = l_stats['BaseMana'] * mana_mult
         h_mana_calc = h_stats['BaseMana'] * mana_mult
-        bad_mana = False
         inconsistent_mana = False
 
         if not within_range(l_mana, l_mana_calc) or not within_range(h_mana, h_mana_calc):
