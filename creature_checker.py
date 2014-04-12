@@ -14,7 +14,6 @@ DB_INFO = {
     'passwd': ''
 }
 
-OUTPUT_FILE = 'TBC_Creature_Stats_Errors.txt'
 ACCURACY = 1
 
 RANKS = ['Normal', 'Elite', 'Rare Elite', 'World Boss', 'Rare']
@@ -28,10 +27,16 @@ if len(sys.argv) < 2:
     print '  3 -- WotLK'
     print '  4 -- Cata'
     expansion = int( raw_input('> ') )
-    EXPANSIONS = range(expansion)
 
 else:
-    EXPANSIONS = range(int(sys.argv[1]))
+    expansion = int(sys.argv[1])
+
+assert expansion in range(1, 5), 'Expansion must be one of: {}'.format(range(1, 5))
+EXPANSIONS = range(expansion)
+MAX_LEVEL = 65 + 10 * expansion if expansion != 4 else 90
+EXPANSION_NAMES = ['CLASSIC', 'TBC', 'WOTLK', 'CATA']
+
+OUTPUT_FILE = 'Creature_Stats_Errors_' + EXPANSION_NAMES[expansion-1] + '.txt'
 
 TESTS = [
     ('Check that all warriors have no mana.',
