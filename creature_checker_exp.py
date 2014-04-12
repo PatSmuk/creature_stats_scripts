@@ -108,10 +108,18 @@ def main(cursor):
 def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health, rank,
     l_mana, h_mana, unit_class, health_mult, mana_mult, expansion):
 
-    assert l_level >= 1, 'Min level {} is less than 1!'.format(l_level)
-    assert h_level <= MAX_LEVEL, 'Max level {} is greater than {}!'.format(h_level, MAX_LEVEL)
-    assert rank >= 0 and rank < len(RANKS), 'Rank {} is invalid!'.format(rank)
-    assert expansion in EXPANSIONS, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
+    try:
+        assert l_level >= 1, 'Min level {} is less than 1!'.format(l_level)
+        assert h_level <= MAX_LEVEL, 'Max level {} is greater than {}!'.format(h_level, MAX_LEVEL)
+        assert rank >= 0 and rank < len(RANKS), 'Rank {} is invalid!'.format(rank)
+        assert expansion in EXPANSIONS, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
+
+    except AssertionError, e:
+        print 'Failed assertion for {} (entry: {}):'.format(name, entry)
+        print str(e) + '\n'
+        global defect_count
+        defect_count += 1
+        return
 
     def within_range(a, b):
         return abs(a - b) <= ACCURACY
