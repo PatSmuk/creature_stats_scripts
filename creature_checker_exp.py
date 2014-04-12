@@ -112,7 +112,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
         assert l_level >= 1, 'Min level {} is less than 1!'.format(l_level)
         assert h_level <= MAX_LEVEL, 'Max level {} is greater than {}!'.format(h_level, MAX_LEVEL)
         assert rank >= 0 and rank < len(RANKS), 'Rank {} is invalid!'.format(rank)
-        assert expansion in EXPANSIONS, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
+        assert expansion in EXPANSIONS or expansion == -1, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
 
     except AssertionError, e:
         print 'Failed assertion for {} (entry: {}):'.format(name, entry)
@@ -124,7 +124,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
     def within_range(a, b):
         return abs(a - b) <= ACCURACY
 
-    if unit_class != 0:
+    if unit_class != 0 and expansion != -1:
         l_stats, h_stats = stats[unit_class][l_level], stats[unit_class][h_level]
 
         l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
