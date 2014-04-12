@@ -7,10 +7,10 @@ Written by Patman64.
 import MySQLdb as mysql
 
 DB_INFO = {
-        'db': 'tbc_database',
+        'db': 'tbcdb',
       'host': '127.0.0.1',
       'user': 'root',
-    'passwd': 'xxxx'
+    'passwd': ''
 }
 
 OUTPUT_FILE = 'TBC_Creature_Stats_Errors.txt'
@@ -60,18 +60,22 @@ TESTS = [
 
 def main(cursor):
     print 'Loading creature stats...'
+
+    base_healths = ''
+    for i in EXPANSIONS:
+        base_healths += 'BaseHealthExp' + str(i) + ', '
+
     cursor.execute("""
-        SELECT Level, Class, BaseMana, BaseHealthExp0, BaseHealthExp1
-        FROM creature_template_classlevelstats""")
+        SELECT Level, Class, BaseMana, {}
+        FROM creature_template_classlevelstats""".format(base_healths[:-2]))
 
     stats = {}
     for row in cursor.fetchall():
         Level, Class = row[0], row[1]
         if not Class in stats: stats[Class] = {}
-        stats[Class][Level] = dict(
-            BaseMana=row[2],
-            BaseHealthExp0=row[3],
-            BaseHealthExp1=row[4])
+        stats[Class][Level] = dict(BaseMana=row[2])
+        for i in EXPANSIONS:
+            stats[Class][Level]['BaseHealthExp' + str(i)] = row[3 + i]
 
     print '\nChecking creatures...'
     cursor.execute("""
