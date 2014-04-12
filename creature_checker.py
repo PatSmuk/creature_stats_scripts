@@ -17,9 +17,6 @@ DB_INFO = {
 OUTPUT_FILE = 'TBC_Creature_Stats_Errors.txt'
 ACCURACY = 1
 
-creature_count = 0
-defect_count = 0
-
 RANKS = ['Normal', 'Elite', 'Rare Elite', 'World Boss', 'Rare']
 UNIT_CLASSES = ['???', 'Warrior', 'Paladin', '', 'Rogue', '', '', '', 'Mage']
 MAX_LEVEL = 75
@@ -95,11 +92,14 @@ def main(cursor):
         minlevelmana, maxlevelmana, unitclass, healthmultiplier, manamultiplier, expansion
         FROM creature_template""")
 
+    creature_count = 0
+    defect_count = 0
+
     with open(OUTPUT_FILE, 'w') as f:
         for row in cursor.fetchall():
-            global creature_count
             creature_count += 1
-            check_creature(f, stats, *row)
+            if check_creature(f, stats, *row):
+                defect_count += 1
 
         percent = float(defect_count)/creature_count*100
         if percent > 99.99 and percent < 100: percent = 99.99
@@ -133,9 +133,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
     except AssertionError, e:
         print 'Failed assertion for {} (entry: {}):'.format(name, entry)
         print str(e) + '\n'
-        global defect_count
-        defect_count += 1
-        return
+        return True
 
     def within_range(a, b):
         return abs(a - b) <= ACCURACY
@@ -206,8 +204,6 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
         return suggestions
 
     if unit_class == 0 or expansion == -1 or bad_health or bad_mana:
-        global defect_count
-        defect_count += 1
         out.write('=============================================================\n')
         out.write('\n')
         out.write('DATABASE\n')
@@ -264,6 +260,8 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
             for suggestion in make_suggestions(expansion, 0, mana=True):
                 out.write(' - {}.\n'.format(suggestion.capitalize()))
             out.write('\n')
+
+        return True
 
 if __name__ == '__main__':
     connection = mysql.connect(**DB_INFO)
