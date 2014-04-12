@@ -205,7 +205,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
 
         return suggestions
 
-    if unit_class == 0 or bad_health or bad_mana:
+    if unit_class == 0 or expansion == -1 or bad_health or bad_mana:
         global defect_count
         defect_count += 1
         out.write('=============================================================\n')
