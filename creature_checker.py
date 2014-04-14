@@ -14,19 +14,26 @@ DB_INFO = {
     'passwd': ''
 }
 
-EXPANSION = 2
+# Which expansion the DB is for.
+# 0 = Classic
+# 1 = TBC
+# 2 = WotLK
+# 3 = Cataclysm
+EXPANSION = 1
+
+# How accurate the stats need to be.
 ACCURACY = 1
 
 RANKS = ['Normal', 'Elite', 'Rare Elite', 'World Boss', 'Rare']
 UNIT_CLASSES = ['???', 'Warrior', 'Paladin', '', 'Rogue', '', '', '', 'Mage']
 MAX_LEVEL = 75
 
-assert EXPANSION in range(1, 5), 'Expansion must be one of: {}'.format(range(1, 5))
-EXPANSIONS = range(EXPANSION)
+assert EXPANSION in range(4), 'Expansion must be one of: {}'.format(range(4))
+EXPANSIONS = range(EXPANSION + 1)
 MAX_LEVEL = 65 + 10 * EXPANSION if EXPANSION != 4 else 90
 EXPANSION_NAMES = ['CLASSIC', 'TBC', 'WOTLK', 'CATA']
 
-OUTPUT_FILE = 'Creature_Stats_Errors_' + EXPANSION_NAMES[EXPANSION-1] + '.txt'
+OUTPUT_FILE = 'Creature_Stats_Errors_' + EXPANSION_NAMES[EXPANSION] + '.txt'
 
 TESTS = [
     ('Check that all warriors have no mana.',
@@ -46,14 +53,14 @@ TESTS = [
 ]
 
 # Tests that depend on heroic entry fields.
-if EXPANSION > 1:
+if EXPANSION > 0:
     heroic_fields = [
         ['HeroicEntry'],
         ['DifficultyEntry1', 'DifficultyEntry2', 'DifficultyEntry3'],
         ['difficulty_entry_1', 'difficulty_entry_2', 'difficulty_entry_3']
     ]
 
-    for field in heroic_fields[EXPANSION-2]:
+    for field in heroic_fields[EXPANSION-1]:
         TESTS.append(
             ('Check that any heroic entries exist.',
             ('{0} != 0 and {0} not in (select entry from creature_template)').format(field)))
