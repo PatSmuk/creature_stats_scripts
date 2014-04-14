@@ -14,29 +14,19 @@ DB_INFO = {
     'passwd': ''
 }
 
+EXPANSION = 2
 ACCURACY = 1
 
 RANKS = ['Normal', 'Elite', 'Rare Elite', 'World Boss', 'Rare']
 UNIT_CLASSES = ['???', 'Warrior', 'Paladin', '', 'Rogue', '', '', '', 'Mage']
 MAX_LEVEL = 75
 
-if len(sys.argv) < 2:
-    print 'Please enter an expansion ID.'
-    print '  1 -- Classic'
-    print '  2 -- TBC'
-    print '  3 -- WotLK'
-    print '  4 -- Cata'
-    expansion = int( raw_input('> ') )
-
-else:
-    expansion = int(sys.argv[1])
-
-assert expansion in range(1, 5), 'Expansion must be one of: {}'.format(range(1, 5))
-EXPANSIONS = range(expansion)
-MAX_LEVEL = 65 + 10 * expansion if expansion != 4 else 90
+assert EXPANSION in range(1, 5), 'Expansion must be one of: {}'.format(range(1, 5))
+EXPANSIONS = range(EXPANSION)
+MAX_LEVEL = 65 + 10 * EXPANSION if EXPANSION != 4 else 90
 EXPANSION_NAMES = ['CLASSIC', 'TBC', 'WOTLK', 'CATA']
 
-OUTPUT_FILE = 'Creature_Stats_Errors_' + EXPANSION_NAMES[expansion-1] + '.txt'
+OUTPUT_FILE = 'Creature_Stats_Errors_' + EXPANSION_NAMES[EXPANSION-1] + '.txt'
 
 TESTS = [
     ('Check that all warriors have no mana.',
@@ -53,24 +43,37 @@ TESTS = [
 
     ('Check that all creatures have a valid rank (0-4).',
         'Rank < 0 or Rank > 4'),
-
-    ('Check that any heroic entries exist.',
-        'HeroicEntry != 0 and HeroicEntry not in (select entry from creature_template)'),
-
-    ('Check that any heroic entries have the same rank as their normal version.',
-        'HeroicEntry != 0 and Rank != '+
-        '(select ct2.Rank from creature_template ct2 where ct2.Entry = ct.HeroicEntry)'),
-
-    ('Check that any heroic entries have the same class as their normal version.',
-        'HeroicEntry != 0 and UnitClass != '+
-        '(select ct2.UnitClass from creature_template ct2 where ct2.Entry = ct.HeroicEntry)'),
-
-    ('Check that any heroic entries have the same factions as their normal version.',
-        'HeroicEntry != 0 and (FactionAlliance != '+
-        '(select ct2.FactionAlliance from creature_template ct2 where ct2.Entry = ct.HeroicEntry) '+
-        'or FactionHorde != '+
-        '(select ct2.FactionHorde from creature_template ct2 where ct2.Entry = ct.HeroicEntry))'),
 ]
+
+# Tests that depend on heroic entry fields.
+if EXPANSION > 1:
+    heroic_fields = [
+        ['HeroicEntry'],
+        ['DifficultyEntry1', 'DifficultyEntry2', 'DifficultyEntry3'],
+        ['difficulty_entry_1', 'difficulty_entry_2', 'difficulty_entry_3']
+    ]
+
+    for field in heroic_fields[EXPANSION-2]:
+        TESTS.append(
+            ('Check that any heroic entries exist.',
+            ('{0} != 0 and {0} not in (select entry from creature_template)').format(field)))
+
+        TESTS.append(
+            ('Check that any heroic entries have the same rank as their normal version.',
+            ('{0} != 0 and Rank != '+
+            '(select ct2.Rank from creature_template ct2 where ct2.Entry = ct.{0})').format(field)))
+
+        TESTS.append(
+            ('Check that any heroic entries have the same class as their normal version.',
+            ('{0} != 0 and UnitClass != '+
+            '(select ct2.UnitClass from creature_template ct2 where ct2.Entry = ct.{0})').format(field)))
+
+        TESTS.append(
+            ('Check that any heroic entries have the same factions as their normal version.',
+            ('{0} != 0 and (FactionAlliance != '+
+            '(select ct2.FactionAlliance from creature_template ct2 where ct2.Entry = ct.{0}) '+
+            'or FactionHorde != '+
+            '(select ct2.FactionHorde from creature_template ct2 where ct2.Entry = ct.{0}))').format(field)))
 
 def main(cursor):
     print 'Loading creature stats...'
@@ -133,7 +136,7 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
         assert l_level >= 1, 'Min level {} is less than 1!'.format(l_level)
         assert h_level <= MAX_LEVEL, 'Max level {} is greater than {}!'.format(h_level, MAX_LEVEL)
         assert rank >= 0 and rank < len(RANKS), 'Rank {} is invalid!'.format(rank)
-        assert expansion in EXPANSIONS or expansion == -1, 'Expansion is {} instead of {}!'.format(expansion, EXPANSIONS)
+        assert expansion in EXPANSIONS or expansion == -1, 'Expansion {} not in {}!'.format(expansion, EXPANSIONS)
 
     except AssertionError, e:
         print 'Failed assertion for {} (entry: {}):'.format(name, entry)
