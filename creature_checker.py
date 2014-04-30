@@ -191,25 +191,23 @@ def check_creature(out, stats, entry, name, l_level, h_level, l_health, h_health
         for expansion in EXPANSIONS:
             for _class in classes:
                 l_stats, h_stats = stats[_class][l_level], stats[_class][h_level]
+                # Some creature have messed up levels, in that case only use the max.
+                ignore_low = (h_level - l_level) > 6
 
                 if health:
-                    _l_health_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
-                    _h_health_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
-
-                    if within_range(l_health, _l_health_calc) and within_range(h_health, _h_health_calc):
-                        if expansion == expansion_db:
-                            suggestions.append('change class to ' + str(_class))
-                        else:
-                            suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
+                    _l_value, _h_value = l_health, h_health
+                    _l_calc = l_stats['BaseHealthExp' + str(expansion)] * health_mult
+                    _h_calc = h_stats['BaseHealthExp' + str(expansion)] * health_mult
                 elif mana:
-                    _l_mana_calc = l_stats['BaseMana'] * mana_mult
-                    _h_mana_calc = h_stats['BaseMana'] * mana_mult
+                    _l_value, _h_value = l_mana, h_mana
+                    _l_calc = l_stats['BaseMana'] * mana_mult
+                    _h_calc = h_stats['BaseMana'] * mana_mult
 
-                    if within_range(l_mana, _l_mana_calc) and within_range(h_mana, _h_mana_calc):
-                        if expansion == expansion_db:
-                            suggestions.append('change class to ' + str(_class))
-                        else:
-                            suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))
+                if (ignore_low or within_range(_l_value, _l_calc)) and within_range(_h_value, _h_calc):
+                    if expansion == expansion_db:
+                        suggestions.append('change class to ' + str(_class))
+                    else:
+                        suggestions.append('change expansion to {} and class to {}'.format(expansion, _class))                
 
         if multiplier_calc > 0:
             suggestions.append('change multiplier to {:.4f}'.format(multiplier_calc))
