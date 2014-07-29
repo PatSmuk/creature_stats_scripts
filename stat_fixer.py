@@ -9,6 +9,7 @@ Written by Patman64 / X-Savior.
 
 import numpy as np
 import MySQLdb as mysql
+from math import ceil
 
 DB_INFO = {
         'db': 'tbc_database',
