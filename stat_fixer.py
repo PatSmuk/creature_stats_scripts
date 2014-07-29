@@ -225,14 +225,6 @@ if __name__ == '__main__':
                 min_damage = raw_input('  Min Melee Damage: ')
                 max_damage = raw_input('  Max Melee Damage: ')
 
-                if min_damage > max_damage:
-                    print 'Min damage must be less than max damage.'
-                    continue
-
-                if min_damage <= 0 or max_damage <= 0:
-                    print 'Min and max damage must be greater than zero.'
-                    continue
-
                 if min_damage == '' or max_damage == '':
                     print ''
                     print '============================'
@@ -244,9 +236,25 @@ if __name__ == '__main__':
                     min_damage = ((l_base_damage * variance      ) + (l_base_AP / 14.0)) * attack_time * multiplier
                     max_damage = ((l_base_damage * variance * 1.5) + (l_base_AP / 14.0)) * attack_time * multiplier
 
+                    if min_damage <= 0:
+                        print 'Min damage is {}, must be greater than zero.'.format(min_damage)
+                        continue
+
+                    if max_damage <= 0:
+                        print 'Max damage is {}, must be greater than zero.'.format(max_damage)
+                        continue
+
                 else:
                     min_damage = float(min_damage)
                     max_damage = float(max_damage)
+
+                    if min_damage > max_damage:
+                        print 'Min damage must be less than max damage.'
+                        continue
+
+                    if min_damage <= 0 or max_damage <= 0:
+                        print 'Min and max damage must be greater than zero.'
+                        continue
 
                     a = np.array([
                         [ l_base_damage * attack_time,       l_base_AP / 14.0 * attack_time ],
@@ -276,7 +284,12 @@ if __name__ == '__main__':
                             multiplier = (min_damage + max_damage) / (base[0] + base[1])
                         else: # Reduce as much as possible.
                             variance = reduce_accuracy(variance, False)
-                            assert variance
+                            # If no variance could be found, bump the damage values.
+                            if not variance:
+                                min_damage += 0.001
+                                max_damage += 0.001
+                                variance = reduce_accuracy(variance, False)
+                                assert variance
                     
                     def reduce_accuracy(var, is_multiplier):
                         var = remove_a_sigfig(var)
@@ -301,7 +314,12 @@ if __name__ == '__main__':
                         else: return var
 
                     multiplier = reduce_accuracy(multiplier, True)
-                    assert multiplier
+                    # If no multiplier could be found, bump the damage values.
+                    if not multiplier:
+                        min_damage += 0.001
+                        max_damage += 0.001
+                        multiplier = reduce_accuracy(multiplier, True)
+                        assert multiplier
 
                 min_ranged_damage = (l_base_damage * 1.0 * variance + l_base_ranged_AP / 14.0) * ranged_attack_time * multiplier
                 max_ranged_damage = (h_base_damage * 1.5 * variance + h_base_ranged_AP / 14.0) * ranged_attack_time * multiplier
