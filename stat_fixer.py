@@ -225,6 +225,10 @@ if __name__ == '__main__':
                 min_damage = raw_input('  Min Melee Damage: ')
                 max_damage = raw_input('  Max Melee Damage: ')
 
+                if min_damage > max_damage:
+                    print 'Min damage must be less than max damage.'
+                    continue
+
                 if min_damage == '' or max_damage == '':
                     print ''
                     print '============================'
