@@ -229,6 +229,10 @@ if __name__ == '__main__':
                     print 'Min damage must be less than max damage.'
                     continue
 
+                if min_damage <= 0 or max_damage <= 0:
+                    print 'Min and max damage must be greater than zero.'
+                    continue
+
                 if min_damage == '' or max_damage == '':
                     print ''
                     print '============================'
