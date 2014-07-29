@@ -309,8 +309,16 @@ if __name__ == '__main__':
                 print '  Damage Variance:   ' + str(variance)
 
                 print ''
-                answer = raw_input('  Is this acceptable? (Y/N): ')
-                if answer.upper() == 'Y':
+                answer = ''
+
+                while answer != 'N' and answer != 'Y':
+                    answer = raw_input('  Is this acceptable? (Y/N): ').upper()
+
+                    if answer != 'N' and answer != 'Y':
+                        print ''
+                        print 'Please enter Y or N.'
+
+                if answer == 'Y':
                     break
 
             with open(OUTPUT_FILE, 'a') as out:
@@ -324,11 +332,11 @@ if __name__ == '__main__':
                     else:
                         out.write("`{}` = '{}' ".format(field, value))
 
-                update_field('MinMeleeDmg', int(min_damage))
-                update_field('MaxMeleeDmg', int(max_damage))
+                update_field('MinMeleeDmg', int(ceil(min_damage)))
+                update_field('MaxMeleeDmg', int(ceil(max_damage)))
 
-                update_field('MinRangedDmg', int(min_ranged_damage))
-                update_field('MaxRangedDmg', int(max_ranged_damage))
+                update_field('MinRangedDmg', int(ceil(min_ranged_damage)))
+                update_field('MaxRangedDmg', int(ceil(max_ranged_damage)))
 
                 update_field('DamageMultiplier', multiplier)
                 update_field('DamageVariance', variance, trailing_comma=False)
