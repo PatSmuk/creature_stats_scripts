@@ -310,7 +310,7 @@ if __name__ == '__main__':
 
                 print ''
                 answer = raw_input('  Is this acceptable? (Y/N): ')
-                if answer == 'Y':
+                if answer.upper() == 'Y':
                     break
 
             with open(OUTPUT_FILE, 'a') as out:
