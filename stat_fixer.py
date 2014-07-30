@@ -152,6 +152,28 @@ if __name__ == '__main__':
                 base = np.dot(a, np.array([1, 1]))
                 multiplier = db_minmeleedmg / base[0]
                 calculated_max = base[1] * multiplier
+
+                def reduce_accuracy(var, is_multiplier):
+                    var = remove_a_sigfig(var)
+                    # No more sigfigs to remove!
+                    if remove_a_sigfig(var) == var:
+                        return var
+                    #print '\nvar: ' + str(var)
+
+                    if is_multiplier:
+                        c_db_minmeleedmg = (l_base_damage * 1.0 * variance + l_base_AP / 14.0) * attack_time * var
+                        c_db_maxmeleedmg = (h_base_damage * 1.5 * variance + h_base_AP / 14.0) * attack_time * var
+                    else:
+                        c_db_minmeleedmg = (l_base_damage * 1.0 * var + l_base_AP / 14.0) * attack_time * multiplier
+                        c_db_maxmeleedmg = (h_base_damage * 1.5 * var + h_base_AP / 14.0) * attack_time * multiplier
+                    
+                    #print 'c_db_minmeleedmg: {}\nc_db_maxmeleedmg: {}'.format(c_db_minmeleedmg, c_db_maxmeleedmg)
+                    if abs(c_db_minmeleedmg - db_minmeleedmg) > 1.0: return None
+                    if abs(c_db_maxmeleedmg - db_maxmeleedmg) > 1.0: return None
+
+                    result = reduce_accuracy(var, is_multiplier)
+                    if result: return result
+                    else: return var
                 
                 if abs(calculated_max - db_maxmeleedmg) < 2:
                     variance = 1.0
@@ -179,28 +201,6 @@ if __name__ == '__main__':
                     else: # Reduce as much as possible.
                         variance = reduce_accuracy(variance, False)
                         assert variance
-                
-                def reduce_accuracy(var, is_multiplier):
-                    var = remove_a_sigfig(var)
-                    # No more sigfigs to remove!
-                    if remove_a_sigfig(var) == var:
-                        return var
-                    #print '\nvar: ' + str(var)
-
-                    if is_multiplier:
-                        c_db_minmeleedmg = (l_base_damage * 1.0 * variance + l_base_AP / 14.0) * attack_time * var
-                        c_db_maxmeleedmg = (h_base_damage * 1.5 * variance + h_base_AP / 14.0) * attack_time * var
-                    else:
-                        c_db_minmeleedmg = (l_base_damage * 1.0 * var + l_base_AP / 14.0) * attack_time * multiplier
-                        c_db_maxmeleedmg = (h_base_damage * 1.5 * var + h_base_AP / 14.0) * attack_time * multiplier
-                    
-                    #print 'c_db_minmeleedmg: {}\nc_db_maxmeleedmg: {}'.format(c_db_minmeleedmg, c_db_maxmeleedmg)
-                    if abs(c_db_minmeleedmg - db_minmeleedmg) > 1.0: return None
-                    if abs(c_db_maxmeleedmg - db_maxmeleedmg) > 1.0: return None
-
-                    result = reduce_accuracy(var, is_multiplier)
-                    if result: return result
-                    else: return var
 
                 multiplier = reduce_accuracy(multiplier, True)
                 assert multiplier
@@ -266,6 +266,28 @@ if __name__ == '__main__':
                         multiplier = min_damage / base[0]
                         calculated_max = base[1] * multiplier
                         
+                        def reduce_accuracy(var, is_multiplier):
+                            var = remove_a_sigfig(var)
+                            # No more sigfigs to remove!
+                            if remove_a_sigfig(var) == var:
+                                return var
+                            #print '\nvar: ' + str(var)
+
+                            if is_multiplier:
+                                c_min_damage = (l_base_damage * 1.0 * variance + l_base_AP / 14.0) * attack_time * var
+                                c_max_damage = (h_base_damage * 1.5 * variance + h_base_AP / 14.0) * attack_time * var
+                            else:
+                                c_min_damage = (l_base_damage * 1.0 * var + l_base_AP / 14.0) * attack_time * multiplier
+                                c_max_damage = (h_base_damage * 1.5 * var + h_base_AP / 14.0) * attack_time * multiplier
+                            
+                            #print 'c_min_damage: {}\nc_max_damage: {}'.format(c_min_damage, c_max_damage)
+                            if abs(c_min_damage - min_damage) > 1.0: return None
+                            if abs(c_max_damage - max_damage) > 1.0: return None
+
+                            result = reduce_accuracy(var, is_multiplier)
+                            if result: return result
+                            else: return var
+
                         if abs(calculated_max - max_damage) < 2:
                             variance = 1.0
                             multiplier = (min_damage + max_damage) / (base[0] + base[1])
@@ -291,28 +313,6 @@ if __name__ == '__main__':
                                     max_damage += 0.001
                                     variance = reduce_accuracy(variance, False)
                                     assert variance
-                        
-                        def reduce_accuracy(var, is_multiplier):
-                            var = remove_a_sigfig(var)
-                            # No more sigfigs to remove!
-                            if remove_a_sigfig(var) == var:
-                                return var
-                            #print '\nvar: ' + str(var)
-
-                            if is_multiplier:
-                                c_min_damage = (l_base_damage * 1.0 * variance + l_base_AP / 14.0) * attack_time * var
-                                c_max_damage = (h_base_damage * 1.5 * variance + h_base_AP / 14.0) * attack_time * var
-                            else:
-                                c_min_damage = (l_base_damage * 1.0 * var + l_base_AP / 14.0) * attack_time * multiplier
-                                c_max_damage = (h_base_damage * 1.5 * var + h_base_AP / 14.0) * attack_time * multiplier
-                            
-                            #print 'c_min_damage: {}\nc_max_damage: {}'.format(c_min_damage, c_max_damage)
-                            if abs(c_min_damage - min_damage) > 1.0: return None
-                            if abs(c_max_damage - max_damage) > 1.0: return None
-
-                            result = reduce_accuracy(var, is_multiplier)
-                            if result: return result
-                            else: return var
 
                         multiplier = reduce_accuracy(multiplier, True)
                         # If no multiplier could be found, bump the damage values.
